@@ -8,6 +8,10 @@ import {
   Chat,
   OverlayProvider,
   ChannelList,
+  Channel,
+  MessageList,
+  MessageInput,
+  Thread,
 } from 'stream-chat-expo';
 import { StreamChat } from 'stream-chat';
 import { chatApiKey, chatUserId } from './chatConfig';
@@ -16,10 +20,23 @@ import { AppProvider, useAppContext } from './AppContext';
 
 const Stack = createStackNavigator();
 
-const HomeScreen = () => <Text>Home Screen</Text>;
+const ChannelScreen = (props) => {
+  const { navigation } = props;
+  const { channel, setThread } = useAppContext();
 
-const ChannelScreen = () => {
-  return null;
+  return (
+    <Channel channel={channel}>
+      <MessageList
+        onThreadSelect={(message) => {
+          if (channel?.id) {
+            setThread(message);
+            navigation.navigate('Thread');
+          }
+        }}
+      />
+      <MessageInput />
+    </Channel>
+  );
 }
 
 const filters = {
@@ -47,6 +64,15 @@ const ChannelListScreen = (props) => {
   );
 };
 
+const ThreadScreen = () => {
+  const { channel, thread } = useAppContext();
+  return (
+    <Channel channel={channel} thread={thread} threadList>
+      <Thread />
+    </Channel>
+  );
+}
+
 const chatClient = StreamChat.getInstance(chatApiKey);
 
 const NavigationStack = () => {
@@ -60,9 +86,9 @@ const NavigationStack = () => {
     <OverlayProvider>
       <Chat client={chatClient}>
         <Stack.Navigator>
-          <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="ChannelList" component={ChannelListScreen} />
           <Stack.Screen name="Channel" component={ChannelScreen} />
+          <Stack.Screen name="Thread" component={ThreadScreen} />
         </Stack.Navigator>
       </Chat>
     </OverlayProvider>
